@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.reto.automatizacion'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+
+    // Karate Framework
+    testImplementation 'io.karatelabs:karate-core:2.1.2'
+
+    // JUnit 6
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.2'
+
+    // Necesario para que Gradle pueda iniciar JUnit Platform
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.2'
+}
+
+/*
+ * Karate utiliza los archivos .feature desde src/test/java.
+ * Esta configuración permite que Gradle también los copie
+ * como recursos de prueba.
+ */
+sourceSets {
+    test {
+        resources {
+            srcDir file('src/test/java')
+            exclude '**/*.java'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+
+    jvmArgs '--enable-preview'
+
+    systemProperties System.properties.findAll { key, value ->
+        key.toString().startsWith('karate.')
+    }
+
+    outputs.upToDateWhen { false }
+}
