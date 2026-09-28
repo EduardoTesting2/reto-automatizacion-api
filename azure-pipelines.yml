@@ -1,0 +1,38 @@
+trigger:
+- main
+
+pool:
+  name: Default
+
+steps:
+- checkout: self
+  displayName: 'Descargar repositorio API'
+
+- task: PowerShell@2
+  displayName: 'Verificar Java'
+  inputs:
+    targetType: 'inline'
+    script: |
+      java -version
+
+- task: PowerShell@2
+  displayName: 'Ejecutar pruebas API - Karate'
+  inputs:
+    targetType: 'inline'
+    script: |
+      .\gradlew.bat clean test
+
+- task: PublishTestResults@2
+  displayName: 'Publicar resultados de pruebas API'
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/build/test-results/test/*.xml'
+    testRunTitle: 'Automatizacion API - Karate'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publicar reporte HTML de Gradle'
+  condition: succeededOrFailed()
+  inputs:
+    targetPath: '$(System.DefaultWorkingDirectory)\build\reports\tests\test'
+    artifact: 'reporte-api'
